@@ -1,91 +1,81 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
-#pragma warning(disable : 4996) .
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <conio.h>
-
-void Move(void);
-void Cordinate(void);
-void Board(void);
-
-
-typedef enum {STOP=0,UP,DOWN,LEFT,RIGHT} Direction;
-Direction Dir;
-
 bool gameOver ;
-bool hit = false;
+bool hit=false;
+int x, y, score = 0;
+const int width = 40, height = 20;
 int tailX[200], tailY[200];
-int x, y;
-int score = 0;
 int ntail = 3;
 int fruitX, fruitY;
-const int width = 50, height = 20;
+
+typedef enum{STOP=0,UP,DOWN,LEFT,RIGHT} Direction ;
+Direction Dir;
+
 
 void setup(void)
 {
-	gameOver = false;
+	Dir = STOP;
 	x = width / 2;
 	y = height / 2;
-	fruitX = rand() % 10;
-	fruitY = rand() % 10;
+	fruitX = rand() % width;
+	fruitY = rand() % height;
 	score = 0;
-
 }
 
-
-void draw() {
-	
+void draw(void)
+{
+	int i, j, k;
 	system("cls");
-	printf("Score:%d", score);
-	printf("\n");
-	int i;
-	for (i = 0; i < width + 1; i++) { 
+	printf("Score = %d \n\n", score);
+	
+	for (i = 0; i < width; i++)
+	{
 		printf("=");
 	}
 	printf("\n");
-	int p;
-	for (p = 0; p < height; p++) {
-		int q;
-		for (q = 0; q < width; q++) {
-			if (q == 0 || q == width - 1) { 
+
+	for (j = 0; j < height; j++)
+	{
+		for (k = 0; k < width; k++)
+		{
+			if (k == 0 || k == width - 1)
+			{
 				printf("!");
 			}
-			if (p == y && q == x) {
+			if (j == y && k == x)
+			{
 				printf("*");
-
 			}
-			else if (p == fruitY && q == fruitX) {
+			else if (j == fruitY && k == fruitX) {
 				printf("#");
 			}
 			else {
-				int k = 0;
+				int d;
 				bool print = false;
-				for (k = 0; k < ntail; k++) {
-					if (tailX[k] == q && tailY[k] == p) {
+				for (d = 0; d < ntail; d++) {
+					if (tailX[d] == k && tailY[d] == j) {
 						printf("*");
 						print = true;
 					}
 				}
-				if (!print) { printf(" "); }
+
+				if (!print)	{
+					printf(" ");
+				}
 			}
 		}
 		printf("\n");
 	}
 
-	int j;
-	for (j = 0; j < width + 1; j++) {
+	for (int u = 0; u < width+1; u++) {
 		printf("=");
 	}
-
 }
 
-
-void Move(void)
+void input(void)
 {
-	if (_kbhit()) {
+	if (_kbhit())
+	{
 		switch (_getch()) {
+
 		case 'w':
 			Dir = UP;
 			hit = true;
@@ -111,49 +101,70 @@ void Move(void)
 			break;
 		}
 	}
-	else if (!hit)
-	{
+	else if (!hit){
 		x++;
 	}
-
 }
 
-void Cordinate(void)
+void logic(void)
 {
-	switch (Dir)
+	int lastX = tailX[0];
+	int lastY = tailY[0];
+	int last2X, last2Y;
+	tailX[0] = x;
+	tailY[0] = y;
+
+	int i = 0; 
+	
+	for (i = 0; i < ntail; i++)
 	{
+		last2X = tailX[i];
+		last2Y = tailY[i];
+		tailX[i] = lastX;
+		tailY[i] =  lastY;
+		lastX = last2X;
+		lastY = last2Y;
+	}
+
+	switch (Dir){
 	case UP:y--;
 		break;
-		
+
 	case DOWN:y++;
 		break;
-		
+
 	case LEFT:x--;
 		break;
-
+		
 	case RIGHT:x++;
 		break;
+
 	}
-	if (x < 0 || width < x || y < 0 || height < y) {
+	if (x < 0 || width < x || y < 0 || y > height)
+	{
 		gameOver = true;
-		system("cls");
+		printf("GOOD BYE LOOSER ");
 	}
 	if (x == fruitX && y == fruitY) {
 		ntail++;
-		score +=10;
+		score = +10;
 		fruitX = rand() % width;
 		fruitY = rand() % height;
 	}
- }
+}
 
 
-int main(void) {
+
+
+int main(void)
+{
 	setup();
 	draw();
-	while (!gameOver) {
-		draw();
-		Move();
-		Cordinate();
-	}
 
+	while (!gameOver)
+	{
+		draw();
+		input();
+		logic();
+	}
 }
